@@ -52,6 +52,8 @@ class ImmoWeb(ImmoCollecterItf):
     def _create_connection(self, headers=HEADERS):
         self.conn = requests.Session()
         self.conn.headers = headers
+        # Bypass proxy for immoweb.be (direct connection)
+        self.conn.trust_env = False
 
     @staticmethod
     def _convert_to_api_url(search_url):
@@ -254,7 +256,10 @@ class ImmoWeb(ImmoCollecterItf):
     @staticmethod
     def is_house_gone(url):
         try:
-            house_page = requests.get(url, headers=HEADERS)
+            # Bypass proxy for direct connection
+            session = requests.Session()
+            session.trust_env = False
+            house_page = session.get(url, headers=HEADERS)
             soup = BeautifulSoup(house_page.text, "html.parser")
             # Try the standard approach
             for script in soup.find_all("script"):

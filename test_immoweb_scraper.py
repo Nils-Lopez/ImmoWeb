@@ -266,29 +266,35 @@ class TestImmoWebScraper(unittest.TestCase):
 class TestImmoWebIsHouseGone(unittest.TestCase):
     """Test the is_house_gone static method."""
 
-    @patch('ImmoCollecterImmoWeb.requests.get')
-    def test_house_exists(self, mock_get):
+    @patch('ImmoCollecterImmoWeb.requests.Session')
+    def test_house_exists(self, mock_session_cls):
+        mock_session = MagicMock()
         mock_response = MagicMock()
         mock_response.text = """
         <html><body>
         <script>window.classified = {"id": 123};</script>
         </body></html>
         """
-        mock_get.return_value = mock_response
+        mock_session.get.return_value = mock_response
+        mock_session_cls.return_value = mock_session
 
         self.assertFalse(ImmoWeb.is_house_gone("https://www.immoweb.be/nl/zoekertje/123"))
 
-    @patch('ImmoCollecterImmoWeb.requests.get')
-    def test_house_gone(self, mock_get):
+    @patch('ImmoCollecterImmoWeb.requests.Session')
+    def test_house_gone(self, mock_session_cls):
+        mock_session = MagicMock()
         mock_response = MagicMock()
         mock_response.text = "<html><body>Not found</body></html>"
-        mock_get.return_value = mock_response
+        mock_session.get.return_value = mock_response
+        mock_session_cls.return_value = mock_session
 
         self.assertTrue(ImmoWeb.is_house_gone("https://www.immoweb.be/nl/zoekertje/123"))
 
-    @patch('ImmoCollecterImmoWeb.requests.get')
-    def test_house_request_fails(self, mock_get):
-        mock_get.side_effect = Exception("Connection error")
+    @patch('ImmoCollecterImmoWeb.requests.Session')
+    def test_house_request_fails(self, mock_session_cls):
+        mock_session = MagicMock()
+        mock_session.get.side_effect = Exception("Connection error")
+        mock_session_cls.return_value = mock_session
         self.assertTrue(ImmoWeb.is_house_gone("https://www.immoweb.be/nl/zoekertje/123"))
 
 
